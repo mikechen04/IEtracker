@@ -17,7 +17,7 @@ function getApiEndpoint() {
     return { url: proxyUrl.replace(/\/$/, ''), apiKey: null };
   }
 
-  // direct call — usually blocked by cors on github.io
+  // direct call, usually blocked by cors on github.io
   return {
     url: 'https://api.mccisland.net/graphql',
     apiKey: import.meta.env.VITE_MCCI_API_KEY,
@@ -46,7 +46,7 @@ async function gqlFetch(query) {
     const msg = err.message || String(err);
     if (msg.includes('NetworkError') || msg.includes('Failed to fetch')) {
       throw new Error(
-        'CORS/network blocked (GitHub Pages needs the Cloudflare proxy — see workers/README.md in the repo)'
+        'Live API blocked by browser CORS. Deploy the Cloudflare proxy in workers/README.md, add VITE_MCCI_PROXY_URL to GitHub Actions secrets, then redeploy.'
       );
     }
     throw err;
@@ -294,7 +294,7 @@ function getCosmeticType(asset) {
 // convert raw api listing to a normalized object
 export function normalizeApiListing(raw) {
   const qty = raw.amount || 1;
-  // cost is the total price for the whole listing — divide to get per-item price
+  // cost is total for the listing, divide to get per-item price
   const pricePerItem = Math.round((raw.cost || 0) / qty);
   return {
     id: raw.identifier,
@@ -321,7 +321,7 @@ export function normalizeApiListing(raw) {
 // convert raw api sale to a normalized sale object (for price history)
 export function normalizeApiSale(raw) {
   const qty = raw.amount || 1;
-  // same deal — normalize to per-item price so medians are apples-to-apples
+  // same deal, normalize to per-item price so medians match
   const pricePerItem = Math.round((raw.cost || 0) / qty);
   return {
     itemName: buildAssetName(raw.asset),

@@ -2,16 +2,25 @@
 
 GitHub Pages cannot call `api.mccisland.net` directly from the browser. This Worker forwards requests and adds CORS headers.
 
-## One-time setup (~5 min)
+## Option A: GitHub Actions deploys the worker for you
 
-1. Install [Wrangler](https://developers.cloudflare.com/workers/wrangler/) (needs a free Cloudflare account):
+1. Create a free [Cloudflare](https://dash.cloudflare.com) account.
+2. Cloudflare dashboard: **My Profile → API Tokens → Create Token** → use the **Edit Cloudflare Workers** template.
+3. On GitHub **IEtracker → Settings → Secrets → Actions**, add:
+   - `CLOUDFLARE_API_TOKEN` = that token
+   - `VITE_MCCI_API_KEY` = your MCCI API key (already needed for local dev)
+4. Re-run **Deploy to GitHub Pages**. The workflow deploys the worker and bakes the proxy URL into the site.
+
+## Option B: deploy the worker yourself
+
+1. Install Wrangler and log in:
 
    ```
    npm install -g wrangler
    wrangler login
    ```
 
-2. From this folder (`workers/`):
+2. From the `workers/` folder:
 
    ```
    cd workers
@@ -21,13 +30,11 @@ GitHub Pages cannot call `api.mccisland.net` directly from the browser. This Wor
 
    Paste your MCCI API key when prompted.
 
-3. Copy the deploy URL (looks like `https://ie-mcci-proxy.<your-subdomain>.workers.dev`).
+3. Copy the deploy URL (example: `https://ie-mcci-proxy.your-subdomain.workers.dev`).
 
-4. On GitHub repo **IEtracker** → **Settings → Secrets → Actions** → add:
+4. GitHub **Settings → Secrets → Actions** → add:
+   - `VITE_MCCI_PROXY_URL` = that URL (no trailing slash)
 
-   - Name: `VITE_MCCI_PROXY_URL`
-   - Value: your worker URL (no trailing slash)
+5. Re-run **Deploy to GitHub Pages**, then hard-refresh the live site.
 
-5. Re-run **Deploy to GitHub Pages** (Actions tab), then hard-refresh the site.
-
-The API key stays on Cloudflare; it is not baked into the public JS bundle when you use the proxy.
+The API key can stay on Cloudflare instead of in the public JS bundle when you use the proxy.

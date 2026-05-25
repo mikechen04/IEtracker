@@ -30,21 +30,44 @@ jobs:
 
       - run: npm ci
 
+      - name: Deploy Cloudflare worker (optional)
+        id: worker
+        if: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        working-directory: workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          npm install -g wrangler
+          if [ -n "${{ secrets.VITE_MCCI_API_KEY }}" ]; then
+            echo "${{ secrets.VITE_MCCI_API_KEY }}" | wrangler secret put MCCI_API_KEY
+          fi
+          DEPLOY_LOG=$(wrangler deploy 2>&1 | tee ../worker-deploy.log)
+          echo "$DEPLOY_LOG"
+          PROXY_URL=$(echo "$DEPLOY_LOG" | grep -oE 'https://[a-zA-Z0-9.-]+\.workers\.dev' | head -1)
+          echo "proxy_url=$PROXY_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Pick proxy URL for build
+        run: |
+          if [ -n "${{ steps.worker.outputs.proxy_url }}" ]; then
+            echo "VITE_MCCI_PROXY_URL=${{ steps.worker.outputs.proxy_url }}" >> "$GITHUB_ENV"
+          elif [ -n "${{ secrets.VITE_MCCI_PROXY_URL }}" ]; then
+            echo "VITE_MCCI_PROXY_URL=${{ secrets.VITE_MCCI_PROXY_URL }}" >> "$GITHUB_ENV"
+          fi
+
       - uses: actions/configure-pages@v5
 
       - name: Build for GitHub Pages
         run: npm run build
         env:
           GITHUB_PAGES: 'true'
-          # proxy url fixes cors; api key can live on the worker instead
-          VITE_MCCI_PROXY_URL: ${{ secrets.VITE_MCCI_PROXY_URL }}
+          VITE_MCCI_PROXY_URL: ${{ env.VITE_MCCI_PROXY_URL }}
           VITE_MCCI_API_KEY: ${{ secrets.VITE_MCCI_API_KEY }}
 
       # fail early if we accidentally uploaded the dev index.html
       - name: Verify build output
         run: |
           if grep -q 'src/main.jsx' dist/index.html; then
-            echo "dist/index.html still points at dev sources — build misconfigured"
+            echo "dist/index.html still points at dev sources, build misconfigured"
             exit 1
           fi
           grep -q '/IEtracker/assets/' dist/index.html

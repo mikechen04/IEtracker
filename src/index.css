@@ -660,7 +660,7 @@ body {
   gap: 10px;
 }
 
-/* section header row — title on left, controls on right */
+/* section header row, title on left, controls on right */
 .modal-section-header {
   display: flex;
   align-items: center;

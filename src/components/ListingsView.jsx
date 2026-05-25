@@ -130,7 +130,7 @@ export default function ListingsView({
 
   const flipCount = enriched.filter(l => l.isFlipEligible).length;
 
-  // count per category for sidebar badges — use unfiltered enriched (before category filter)
+  // count per category for sidebar badges, use unfiltered enriched (before category filter)
   const allEnriched = listings
     .filter(l => l.status === 'active' && passesPriceRange(l.price, customFilters))
     .map(listing => {

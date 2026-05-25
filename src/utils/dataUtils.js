@@ -175,7 +175,7 @@ export function processData(rawRows) {
     const totalCost = parsePrice(costRaw);
     if (totalCost === null || totalCost < 1000) continue;
 
-    // normalize to per-item price — sheet records total cost for the whole listing
+    // normalize to per-item price, sheet records total cost for the whole listing
     const qty = parseInt(amountRaw) || 1;
     const price = Math.round(totalCost / qty);
 

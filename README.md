@@ -48,12 +48,13 @@ Open the live site, View Source. If you see `src="/src/main.jsx"`, Pages is not 
 
 ### If live API calls fail (CORS / NetworkError)
 
-Local dev uses a Vite proxy. **GitHub Pages cannot call the MCCI API directly** — the browser blocks it.
+Local dev uses a Vite proxy. **GitHub Pages cannot call the MCCI API directly.** The browser blocks it.
 
-Fix: deploy the free Cloudflare Worker in [`workers/README.md`](workers/README.md), then add a GitHub Actions secret:
+Fix: follow [`workers/README.md`](workers/README.md), then add GitHub Actions secrets:
 
-- `VITE_MCCI_PROXY_URL` = your worker URL (e.g. `https://ie-mcci-proxy.xxx.workers.dev`)
+- `VITE_MCCI_PROXY_URL` = your worker URL (example: `https://ie-mcci-proxy.xxx.workers.dev`)
+- Or add `CLOUDFLARE_API_TOKEN` and the workflow can deploy the worker for you (uses `VITE_MCCI_API_KEY` on the worker)
 
-Re-run the deploy workflow. The API key should be stored on the worker (`wrangler secret put MCCI_API_KEY`), not only in the client bundle.
+Re-run the deploy workflow. Prefer storing the API key on the worker (`wrangler secret put MCCI_API_KEY`), not only in the client bundle.
 
 Sheet price history still works without the API.

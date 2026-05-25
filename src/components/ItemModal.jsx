@@ -81,7 +81,7 @@ export default function ItemModal({ item, onClose, darkMode, activeListings, cus
   const textColor = darkMode ? '#e8e8e8' : '#111111';
   const gridColor = darkMode ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.08)';
 
-  // sales are newest first — reverse for chart (oldest to newest)
+  // sales are newest first, reverse for chart (oldest to newest)
   const salesOldFirst = [...item.sales].reverse();
 
   // apply the selected time period filter
@@ -156,7 +156,7 @@ export default function ItemModal({ item, onClose, darkMode, activeListings, cus
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
 
-        {/* stats — only the 3 most useful ones */}
+        {/* stats, only the 3 most useful ones */}
         <div className="modal-stats">
           <div className="stat-block">
             <span className="stat-label">Latest Sale</span>

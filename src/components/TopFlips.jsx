@@ -9,7 +9,7 @@ const RARITY_COLORS = {
   MYTHIC: '#f472b6',
 };
 
-// emoji icon per cosmetic category — used as placeholder since mcci doesn't expose icon urls
+// emoji icon per cosmetic category, placeholder since mcci doesn't expose icon urls
 const CATEGORY_ICONS = {
   HAT: '🎩',
   HAIR: '✂️',
@@ -98,7 +98,7 @@ export default function TopFlips({ listings, itemStats, threshold, customFilters
             {/* rank badge */}
             <span className="flip-rank">#{rank}</span>
 
-            {/* icon area — use cdn image if available, fall back to emoji */}
+            {/* icon area, use cdn image if available, fall back to emoji */}
             <div className="flip-icon-wrap" style={{ borderColor: rarityColor + '55', background: rarityColor + '10' }}>
               {listing.imageUrl ? (
                 <img
