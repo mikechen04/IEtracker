@@ -6,12 +6,13 @@ GitHub Pages cannot call `api.mccisland.net` from the browser. This Worker forwa
 
 Add these **Actions secrets** on the IEtracker repo (**Settings → Secrets and variables → Actions**):
 
-| Secret name | Where to get it |
-|-------------|-----------------|
-| `CLOUDFLARE_API_TOKEN` | Cloudflare → Profile → API Tokens → **Edit Cloudflare Workers** template |
-| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → any zone → right sidebar **Account ID** (32 char hex) |
-| `CLOUDFLARE_WORKERS_SUBDOMAIN` | Cloudflare → **Workers & Pages** → your `*.workers.dev` subdomain (the part before `.workers.dev`, e.g. if the URL is `https://ie-mcci-proxy.mikechen.workers.dev` use `mikechen`) |
-| `VITE_MCCI_API_KEY` | Your [MCCI API key](https://api.mccisland.net/docs) |
+| Secret name | Required? | Where to get it |
+|-------------|-----------|-----------------|
+| `CLOUDFLARE_API_TOKEN` | **Yes** | Cloudflare → Profile → API Tokens → **Edit Cloudflare Workers** template |
+| `CLOUDFLARE_ACCOUNT_ID` | **Yes** (or auto if token works) | Cloudflare dashboard → any site → right sidebar **Account ID** (32 char hex) |
+| `VITE_MCCI_API_KEY` | **Yes** | Your [MCCI API key](https://api.mccisland.net/docs) |
+| `CLOUDFLARE_WORKERS_SUBDOMAIN` | Optional | Only if deploy log does not show a URL. Your `*.workers.dev` name (e.g. `mikechen` from `ie-mcci-proxy.mikechen.workers.dev`) |
+| `VITE_MCCI_PROXY_URL` | Optional | Full worker URL if you deployed manually |
 
 Then **Actions → Deploy to GitHub Pages → Run workflow**.
 
