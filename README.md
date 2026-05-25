@@ -53,8 +53,8 @@ Local dev uses a Vite proxy. **GitHub Pages cannot call the MCCI API directly.**
 Fix: follow [`workers/README.md`](workers/README.md). Add these GitHub Actions secrets:
 
 - `CLOUDFLARE_API_TOKEN`
-- `CLOUDFLARE_ACCOUNT_ID`
-- `CLOUDFLARE_WORKERS_SUBDOMAIN` (your `*.workers.dev` subdomain name)
+- `CLOUDFLARE_ACCOUNT_ID` (run `wrangler whoami` after `wrangler login`, no domain needed)
+- `CLOUDFLARE_WORKERS_SUBDOMAIN` (optional, only if the workflow cannot detect your worker URL)
 - `VITE_MCCI_API_KEY`
 
 Re-run **Deploy to GitHub Pages**. Or set `VITE_MCCI_PROXY_URL` manually if you deployed the worker yourself.
