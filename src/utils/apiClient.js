@@ -46,7 +46,7 @@ async function gqlFetch(query) {
     const msg = err.message || String(err);
     if (msg.includes('NetworkError') || msg.includes('Failed to fetch')) {
       throw new Error(
-        'Live API blocked by browser CORS. Deploy the Cloudflare proxy in workers/README.md, add VITE_MCCI_PROXY_URL to GitHub Actions secrets, then redeploy.'
+        'Live API blocked by browser CORS. Add Cloudflare secrets (see workers/README.md) and re-run Deploy to GitHub Pages.'
       );
     }
     throw err;

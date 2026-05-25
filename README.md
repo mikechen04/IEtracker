@@ -50,11 +50,13 @@ Open the live site, View Source. If you see `src="/src/main.jsx"`, Pages is not 
 
 Local dev uses a Vite proxy. **GitHub Pages cannot call the MCCI API directly.** The browser blocks it.
 
-Fix: follow [`workers/README.md`](workers/README.md), then add GitHub Actions secrets:
+Fix: follow [`workers/README.md`](workers/README.md). Add these GitHub Actions secrets:
 
-- `VITE_MCCI_PROXY_URL` = your worker URL (example: `https://ie-mcci-proxy.xxx.workers.dev`)
-- Or add `CLOUDFLARE_API_TOKEN` and the workflow can deploy the worker for you (uses `VITE_MCCI_API_KEY` on the worker)
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+- `CLOUDFLARE_WORKERS_SUBDOMAIN` (your `*.workers.dev` subdomain name)
+- `VITE_MCCI_API_KEY`
 
-Re-run the deploy workflow. Prefer storing the API key on the worker (`wrangler secret put MCCI_API_KEY`), not only in the client bundle.
+Re-run **Deploy to GitHub Pages**. Or set `VITE_MCCI_PROXY_URL` manually if you deployed the worker yourself.
 
 Sheet price history still works without the API.

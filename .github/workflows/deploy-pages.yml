@@ -30,36 +30,50 @@ jobs:
 
       - run: npm ci
 
-      - name: Deploy Cloudflare worker (optional)
+      - name: Deploy Cloudflare worker
         id: worker
+        uses: cloudflare/wrangler-action@v3
+        continue-on-error: true
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers
+          command: deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Set worker API key on Cloudflare
+        if: steps.worker.outcome == 'success'
         working-directory: workers
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           MCCI_API_KEY: ${{ secrets.VITE_MCCI_API_KEY }}
         run: |
-          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
-            echo "No CLOUDFLARE_API_TOKEN secret, skipping worker deploy"
+          if [ -z "$MCCI_API_KEY" ]; then
+            echo "VITE_MCCI_API_KEY secret missing, skip worker secret"
             exit 0
           fi
           npm install -g wrangler
-          if [ -n "$MCCI_API_KEY" ]; then
-            echo "$MCCI_API_KEY" | wrangler secret put MCCI_API_KEY
-          fi
-          DEPLOY_LOG=$(wrangler deploy 2>&1 | tee ../worker-deploy.log)
-          echo "$DEPLOY_LOG"
-          PROXY_URL=$(echo "$DEPLOY_LOG" | grep -oE 'https://[a-zA-Z0-9.-]+\.workers\.dev' | head -1)
-          echo "proxy_url=$PROXY_URL" >> "$GITHUB_OUTPUT"
+          echo "$MCCI_API_KEY" | wrangler secret put MCCI_API_KEY --name ie-mcci-proxy
 
       - name: Pick proxy URL for build
         env:
-          PROXY_FROM_WORKER: ${{ steps.worker.outputs.proxy_url }}
+          WORKERS_SUBDOMAIN: ${{ secrets.CLOUDFLARE_WORKERS_SUBDOMAIN }}
           PROXY_FROM_SECRET: ${{ secrets.VITE_MCCI_PROXY_URL }}
         run: |
-          if [ -n "$PROXY_FROM_WORKER" ]; then
-            echo "VITE_MCCI_PROXY_URL=$PROXY_FROM_WORKER" >> "$GITHUB_ENV"
-          elif [ -n "$PROXY_FROM_SECRET" ]; then
-            echo "VITE_MCCI_PROXY_URL=$PROXY_FROM_SECRET" >> "$GITHUB_ENV"
+          PROXY_URL=""
+          if [ -n "$PROXY_FROM_SECRET" ]; then
+            PROXY_URL="$PROXY_FROM_SECRET"
+          elif [ -n "$WORKERS_SUBDOMAIN" ]; then
+            PROXY_URL="https://ie-mcci-proxy.${WORKERS_SUBDOMAIN}.workers.dev"
           fi
+          if [ -z "$PROXY_URL" ]; then
+            echo "::error::Add GitHub secrets: CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_WORKERS_SUBDOMAIN (or VITE_MCCI_PROXY_URL). See workers/README.md"
+            exit 1
+          fi
+          echo "Using proxy: $PROXY_URL"
+          echo "VITE_MCCI_PROXY_URL=$PROXY_URL" >> "$GITHUB_ENV"
 
       - uses: actions/configure-pages@v5
 
@@ -70,7 +84,13 @@ jobs:
           VITE_MCCI_PROXY_URL: ${{ env.VITE_MCCI_PROXY_URL }}
           VITE_MCCI_API_KEY: ${{ secrets.VITE_MCCI_API_KEY }}
 
-      # fail early if we accidentally uploaded the dev index.html
+      - name: Verify proxy is in the build
+        run: |
+          if ! grep -rq 'workers.dev' dist/assets/*.js; then
+            echo "Build does not include the proxy URL. Check VITE_MCCI_PROXY_URL."
+            exit 1
+          fi
+
       - name: Verify build output
         run: |
           if grep -q 'src/main.jsx' dist/index.html; then
