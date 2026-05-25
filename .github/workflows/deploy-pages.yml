@@ -12,11 +12,14 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -29,25 +32,26 @@ jobs:
 
       - uses: actions/configure-pages@v5
 
-      # api key from repo secret — baked into the static build (see README)
-      - run: npm run build
+      - name: Build for GitHub Pages
+        run: npm run build
         env:
           GITHUB_PAGES: 'true'
           VITE_MCCI_API_KEY: ${{ secrets.VITE_MCCI_API_KEY }}
 
-      # gh pages needs this so it does not run jekyll on the build output
+      # fail early if we accidentally uploaded the dev index.html
+      - name: Verify build output
+        run: |
+          if grep -q 'src/main.jsx' dist/index.html; then
+            echo "dist/index.html still points at dev sources — build misconfigured"
+            exit 1
+          fi
+          grep -q '/IEtracker/assets/' dist/index.html
+
       - run: touch dist/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - uses: actions/deploy-pages@v4
         id: deployment
