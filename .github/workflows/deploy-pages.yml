@@ -27,11 +27,16 @@ jobs:
 
       - run: npm ci
 
+      - uses: actions/configure-pages@v5
+
       # api key from repo secret — baked into the static build (see README)
       - run: npm run build
         env:
           GITHUB_PAGES: 'true'
           VITE_MCCI_API_KEY: ${{ secrets.VITE_MCCI_API_KEY }}
+
+      # gh pages needs this so it does not run jekyll on the build output
+      - run: touch dist/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3
         with:

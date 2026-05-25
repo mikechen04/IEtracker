@@ -29,10 +29,16 @@ Yes, you can host here. The site is static; the API key is injected **at build t
    - Value: your MCCI API key (same as local `.env`)
 
 2. **Settings → Pages → Build and deployment**
-   - Source: **GitHub Actions**
+   - Source: **GitHub Actions** (not "Deploy from a branch")
+   - If it was set to `main` / root, the site will be a **blank page** because GitHub serves the raw repo `index.html` (dev `/src/main.jsx`) instead of the Vite build.
 
 3. Push to `main` (or run the "Deploy to GitHub Pages" workflow manually).  
+   Wait for the **Deploy to GitHub Pages** workflow to finish (green check on the Actions tab).  
    Site URL: https://mikechen04.github.io/IEtracker/
+
+### Blank page?
+
+Open the live site, View Source. If you see `src="/src/main.jsx"`, Pages is not using the Actions build. Switch source to **GitHub Actions**, re-run the workflow, then hard-refresh (Ctrl+F5). A correct deploy shows `src="/IEtracker/assets/....js"`.
 
 ### Important about the API key
 
