@@ -46,8 +46,14 @@ Open the live site, View Source. If you see `src="/src/main.jsx"`, Pages is not 
 - Use a personal API key you are okay exposing in a public client, or accept that visitors could reuse it.
 - Never commit `.env` to git (already in `.gitignore`).
 
-### If live API calls fail (CORS)
+### If live API calls fail (CORS / NetworkError)
 
-Local dev uses a Vite proxy. GitHub Pages calls `https://api.mccisland.net` directly from the browser. If you see network/CORS errors, the API may not allow your Pages origin — you would need a small backend proxy (Cloudflare Worker, etc.) instead of pure Pages.
+Local dev uses a Vite proxy. **GitHub Pages cannot call the MCCI API directly** — the browser blocks it.
 
-The Google Sheet price history should still work without the API key.
+Fix: deploy the free Cloudflare Worker in [`workers/README.md`](workers/README.md), then add a GitHub Actions secret:
+
+- `VITE_MCCI_PROXY_URL` = your worker URL (e.g. `https://ie-mcci-proxy.xxx.workers.dev`)
+
+Re-run the deploy workflow. The API key should be stored on the worker (`wrangler secret put MCCI_API_KEY`), not only in the client bundle.
+
+Sheet price history still works without the API.

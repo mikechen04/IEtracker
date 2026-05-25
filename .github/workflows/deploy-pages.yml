@@ -36,6 +36,8 @@ jobs:
         run: npm run build
         env:
           GITHUB_PAGES: 'true'
+          # proxy url fixes cors; api key can live on the worker instead
+          VITE_MCCI_PROXY_URL: ${{ secrets.VITE_MCCI_PROXY_URL }}
           VITE_MCCI_API_KEY: ${{ secrets.VITE_MCCI_API_KEY }}
 
       # fail early if we accidentally uploaded the dev index.html

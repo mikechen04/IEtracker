@@ -2,24 +2,55 @@
 // docs: https://api.mccisland.net/docs
 // endpoint goes through the vite proxy (/mcci-api) to avoid cors issues
 
-// dev uses vite proxy; production (github pages) hits the api directly
-const API_URL = import.meta.env.DEV
-  ? '/mcci-api/graphql'
-  : 'https://api.mccisland.net/graphql';
-const API_KEY = import.meta.env.VITE_MCCI_API_KEY;
+// dev = vite proxy; prod = optional cloudflare worker (see workers/README.md)
+function getApiEndpoint() {
+  if (import.meta.env.DEV) {
+    return {
+      url: '/mcci-api/graphql',
+      apiKey: import.meta.env.VITE_MCCI_API_KEY,
+    };
+  }
+
+  const proxyUrl = import.meta.env.VITE_MCCI_PROXY_URL;
+  if (proxyUrl) {
+    // worker holds the key in MCCI_API_KEY secret
+    return { url: proxyUrl.replace(/\/$/, ''), apiKey: null };
+  }
+
+  // direct call — usually blocked by cors on github.io
+  return {
+    url: 'https://api.mccisland.net/graphql',
+    apiKey: import.meta.env.VITE_MCCI_API_KEY,
+  };
+}
 
 // basic graphql fetch helper
 async function gqlFetch(query) {
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key': API_KEY,
-      // noxcrew asks for an identifiable user-agent
-      'User-Agent': 'ie-flipper/1.0 (personal tool)',
-    },
-    body: JSON.stringify({ query }),
-  });
+  const { url, apiKey } = getApiEndpoint();
+  const headers = {
+    'Content-Type': 'application/json',
+    'User-Agent': 'ie-flipper/1.0 (personal tool)',
+  };
+  if (apiKey) {
+    headers['X-API-Key'] = apiKey;
+  }
+
+  let res;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ query }),
+    });
+  } catch (err) {
+    const msg = err.message || String(err);
+    if (msg.includes('NetworkError') || msg.includes('Failed to fetch')) {
+      throw new Error(
+        'CORS/network blocked (GitHub Pages needs the Cloudflare proxy — see workers/README.md in the repo)'
+      );
+    }
+    throw err;
+  }
 
   if (!res.ok) {
     throw new Error(`${res.status} ${res.statusText}`);
