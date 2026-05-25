@@ -11,7 +11,7 @@ MCCI Island Exchange flip tracker (live listings, featured flips, market data).
 VITE_MCCI_API_KEY=your_key_here
 ```
 
-3. Run:
+3. Use **Node.js 24+** (`node -v` to check). Then run:
 
 ```
 npm install
