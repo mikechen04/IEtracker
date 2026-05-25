@@ -2,7 +2,10 @@
 // docs: https://api.mccisland.net/docs
 // endpoint goes through the vite proxy (/mcci-api) to avoid cors issues
 
-const API_URL = '/mcci-api/graphql';
+// dev uses vite proxy; production (github pages) hits the api directly
+const API_URL = import.meta.env.DEV
+  ? '/mcci-api/graphql'
+  : 'https://api.mccisland.net/graphql';
 const API_KEY = import.meta.env.VITE_MCCI_API_KEY;
 
 // basic graphql fetch helper
